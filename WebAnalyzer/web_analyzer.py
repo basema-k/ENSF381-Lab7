@@ -1,6 +1,7 @@
 import requests
-from bs4 import BeautifulSoup
 import re
+from bs4 import BeautifulSoup
+import matplotlib.pyplot as plt
 
 url = "https://en.wikipedia.org/wiki/University_of_Calgary"
 
@@ -44,18 +45,61 @@ try:
         else:
             word_count[word] = 1
 
-    sorted_words = sorted(word_count.items(), key=lambda x: x[1], reverse=True)
+    top5 = []
 
-    # print
-    print("Most Frequent Words")
-    for word, count in sorted_words[:5]:
+    for word in word_count:
+        count = word_count[word]
+    
+        top5.append((word, count))
+    
+        top5.sort(key=lambda x: x[1], reverse=True)
+    
+        if len(top5) > 5:
+            top5.pop()
+
+    print("5 Most Frequent Words")
+    for word, count in top5:
         print(f"{word}: {count}")
 
     # 5
+    keyword = input("\nEnter a keyword to search: ").lower()
+    text = soup.get_text().lower()
+    count = text.count(keyword) 
+
+    print(f"The word '{keyword}' appears {count} times.")
 
     # 6
+    paragraphs = soup.find_all('p')
+
+    longest_paragraph = ""
+    max_words = 0
+
+    for p in paragraphs:
+        text = p.get_text().strip()
+        words = text.split()
+        
+        # ignore short paragraphs
+        if len(words) < 5:
+            continue
+        
+        # check if this is the longest
+        if len(words) > max_words:
+            max_words = len(words)
+            longest_paragraph = text
+
+    print("Longest Paragraph")
+    print(longest_paragraph)
+    print(f"\nWord count: {max_words}")
 
     # 7
+    labels = ['Headings', 'Links', 'Paragraphs']
+    values = [headings_count, links_count, paragraphs_count]
+
+    plt.bar(labels, values)
+    plt.title('Deferred Work for Religious Holiday (No Group)') 
+    plt.ylabel('Count')
+    plt.savefig('web analysis results.png')
+    plt.show()
 
 except Exception as e:
     print(f"Error fetching content: {e}")
